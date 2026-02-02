@@ -1,0 +1,32 @@
+---
+- name: Nginx + handler demo
+  hosts: local
+  become: true
+
+  tasks:
+    - name: Installer nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Déployer une page d'accueil
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: |
+          hello from ansible
+          hostname={{ ansible_hostname }}
+        mode: "0644"
+      notify: Restart nginx
+
+    - name: S'assurer que nginx tourne
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

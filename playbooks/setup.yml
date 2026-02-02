@@ -1,0 +1,20 @@
+---
+- name: Setup de base du controleur Ansible
+  hosts: local
+  become: true
+
+  tasks:
+    - name: Installer curl
+      ansible.builtin.apt:
+        name: curl
+        state: present
+        update_cache: true
+
+    - name: Vérifier la version de curl
+      ansible.builtin.command: curl --version
+      register: curl_version
+      changed_when: false
+
+    - name: Afficher la version de curl
+      ansible.builtin.debug:
+        msg: "{{ curl_version.stdout_lines[0] }}"

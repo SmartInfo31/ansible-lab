@@ -1,0 +1,15 @@
+---
+- name: Test depuis Semaphore
+  hosts: localhost
+  connection: local
+  become: true
+
+  tasks:
+    - name: Ping local
+      ansible.builtin.ping:
+
+    - name: S'assurer que htop est installé
+      ansible.builtin.apt:
+        name: htop
+        state: present
+        update_cache: true

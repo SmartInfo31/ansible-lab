@@ -1,0 +1,10 @@
+---
+- name: Facts demo
+  hosts: local
+  gather_facts: true
+  tasks:
+    - ansible.builtin.debug:
+        msg:
+          - "Hostname: {{ ansible_hostname }}"
+          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "IP: {{ ansible_default_ipv4.address | default('n/a') }}"
