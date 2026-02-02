@@ -1,11 +1,10 @@
 ---
 - name: Test depuis Semaphore
-  hosts: localhost
-  connection: local
-  become: true
+  hosts: vm
+  become: false  # on se connecte déjà en root
 
   tasks:
-    - name: Ping local
+    - name: Ping VM
       ansible.builtin.ping:
 
     - name: S'assurer que htop est installé
