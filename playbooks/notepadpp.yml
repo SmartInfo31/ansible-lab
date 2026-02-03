@@ -1,0 +1,15 @@
+- name: Gérer Notepad++ sur Windows
+  hosts: windows
+  gather_facts: false
+
+  tasks:
+    - name: S'assurer que Chocolatey est installé
+      ansible.windows.win_chocolatey:
+        name: chocolatey
+        state: present
+
+    - name: S'assurer que Notepad++ est à jour
+      ansible.windows.win_chocolatey:
+        name: notepadplusplus
+        state: latest
+
