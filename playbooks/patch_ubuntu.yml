@@ -18,5 +18,5 @@
     - name: Afficher un résumé des changements
       ansible.builtin.debug:
         var: upgrade_result
-        verbosity: 1
+        verbosity: 0
 
