@@ -1,0 +1,22 @@
+- name: Simu patch KEV sur Ubuntu
+  hosts: patch_targets
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Mettre à jour le cache APT
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Mettre à jour les paquets
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: yes
+      register: upgrade_result
+
+    - name: Afficher un résumé des changements
+      ansible.builtin.debug:
+        var: upgrade_result
+        verbosity: 1
+
