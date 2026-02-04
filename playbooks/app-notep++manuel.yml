@@ -1,0 +1,21 @@
+- name: Installer Notepad++ sans Chocolatey
+  hosts: windows
+  gather_facts: false
+
+  tasks:
+    - name: Créer le répertoire temporaire si besoin
+      ansible.windows.win_file:
+        path: C:\Temp
+        state: directory
+
+    - name: Télécharger l'installeur Notepad++
+      ansible.windows.win_get_url:
+        url: https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.1/npp.8.9.1.Installer.x64.exe
+        dest: C:\Temp\npp-installer.exe
+
+    - name: Installer Notepad++ si pas déjà présent
+      ansible.windows.win_package:
+        path: C:\Temp\npp-installer.exe
+        arguments: /S
+        state: present
+        creates_path: 'C:\Program Files\Notepad++\notepad++.exe'
