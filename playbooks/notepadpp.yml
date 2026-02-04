@@ -15,4 +15,4 @@
       win_chocolatey:
         name: notepadplusplus
         state: latest
-
+        force: yes
