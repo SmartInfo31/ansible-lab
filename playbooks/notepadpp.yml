@@ -1,14 +1,18 @@
-- name: Gérer Notepad++ sur Windows
+- name: Gérer Notepad++ via Chocolatey
   hosts: windows
   gather_facts: false
 
+  collections:
+    - chocolatey.chocolatey
+
   tasks:
     - name: S'assurer que Chocolatey est installé
-      chocolatey.chocolatey.win_chocolatey:
+      win_chocolatey:
         name: chocolatey
         state: present
 
     - name: S'assurer que Notepad++ est à jour
-      chocolatey.chocolatey.win_chocolatey:
+      win_chocolatey:
         name: notepadplusplus
         state: latest
+
