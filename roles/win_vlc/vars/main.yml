@@ -1,0 +1,12 @@
+---
+vlc_version: "3.0.23"
+vlc_zip: "vlc-3.0.23-win64.zip"
+vlc_installer: "vlc-3.0.23-win64.exe"
+
+# Répertoires et fichiers sur le poste
+vlc_temp_dir: "C:\\Temp\\vlc"
+vlc_log_file: "C:\\Temp\\install_vlc.log"
+
+# Registre VLC
+vlc_reg_key: "HKLM:\\Software\\VideoLAN\\VLC"
+vlc_reg_value: "Version"

@@ -1,0 +1,15 @@
+---
+- name: Lire la clé de registre VLC
+  ansible.windows.win_reg_stat:
+    path: "{{ vlc_reg_key }}"
+    name: "{{ vlc_reg_value }}"
+  register: reg_vlc
+
+- set_fact:
+    installed: "{{ reg_vlc.exists }}"
+    version: "{{ reg_vlc.value if reg_vlc.exists else 'absent' }}"
+
+- set_fact:
+    detect_result:
+      installed: "{{ installed }}"
+      version: "{{ version }}"

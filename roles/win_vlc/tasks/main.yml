@@ -1,0 +1,71 @@
+---
+# Variables d’entrée attendues :
+# mode: auto | force_install | force_uninstall
+# reboot: yes | no
+
+- name: Vérification du mode
+  fail:
+    msg: "Paramètre 'mode' obligatoire : auto, force_install ou force_uninstall"
+  when: mode is not defined
+
+- include_tasks: detect.yml
+  register: detect_result
+
+# ====================
+#   MODE AUTO
+# ====================
+- name: Auto-mode : upgrade uniquement
+  include_tasks: upgrade.yml
+  when:
+    - mode == "auto"
+    - detect_result.installed
+    - detect_result.version != vlc_version
+
+# ====================
+#   MODE FORCE INSTALL
+# ====================
+- name: Force install : installation si absent
+  include_tasks: install.yml
+  when:
+    - mode == "force_install"
+    - not detect_result.installed
+
+- name: Force install : upgrade si version différente
+  include_tasks: upgrade.yml
+  when:
+    - mode == "force_install"
+    - detect_result.installed
+    - detect_result.version != vlc_version
+
+# ====================
+#   MODE FORCE UNINSTALL
+# ====================
+- name: Force uninstall
+  include_tasks: uninstall.yml
+  when: mode == "force_uninstall"
+
+# ====================
+#   CLEANUP
+# ====================
+- include_tasks: cleanup.yml
+
+# ====================
+#   REBOOT HANDLING
+# ====================
+- name: Reboot si demandé
+  ansible.windows.win_reboot:
+    msg: "Reboot déclenché par rôle win_vlc"
+  when:
+    - reboot | default("no") | bool
+    - reboot_required | default(false) | bool
+
+# ====================
+#   OUTPUT FINAL
+# ====================
+- name: Résultat final du package VLC
+  debug:
+    msg:
+      host: "{{ inventory_hostname }}"
+      status: "{{ package_status | default('unknown') }}"
+      message: "{{ package_message | default('') }}"
+      reboot_required: "{{ reboot_required | default(false) }}"
