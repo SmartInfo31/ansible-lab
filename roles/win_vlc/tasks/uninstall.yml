@@ -1,0 +1,12 @@
+---
+- name: Désinstallation VLC
+  ansible.windows.win_package:
+    name: "VLC media player"
+    state: absent
+    log_path: "{{ vlc_log_file }}"
+  register: uninstall_out
+
+- set_fact:
+    package_status: "removed"
+    package_message: "VLC désinstallé"
+    reboot_required: "{{ uninstall_out.reboot_required | default(false) }}"

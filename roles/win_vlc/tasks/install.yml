@@ -1,0 +1,24 @@
+---
+- name: Préparer le répertoire temporaire
+  ansible.windows.win_file:
+    path: "{{ vlc_temp_dir }}"
+    state: directory
+
+- name: Décompresser le ZIP VLC
+  ansible.windows.win_unzip:
+    src: "{{ role_path }}\\files\\{{ vlc_zip }}"
+    dest: "{{ vlc_temp_dir }}"
+    delete_archive: no
+
+- name: Installation VLC
+  ansible.windows.win_package:
+    path: "{{ vlc_temp_dir }}\\{{ vlc_installer }}"
+    arguments: "/S"
+    state: present
+    log_path: "{{ vlc_log_file }}"
+  register: install_out
+
+- set_fact:
+    package_status: "installed"
+    package_message: "VLC installé"
+    reboot_required: "{{ install_out.reboot_required | default(false) }}"

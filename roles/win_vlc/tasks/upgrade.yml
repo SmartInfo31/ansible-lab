@@ -1,0 +1,13 @@
+---
+- name: Upgrade VLC
+  ansible.windows.win_package:
+    path: "{{ vlc_temp_dir }}\\{{ vlc_installer }}"
+    arguments: "/S"
+    state: latest
+    log_path: "{{ vlc_log_file }}"
+  register: upgrade_out
+
+- set_fact:
+    package_status: "upgraded"
+    package_message: "VLC mis à jour depuis version {{ detect_result.version }}"
+    reboot_required: "{{ upgrade_out.reboot_required | default(false) }}"

@@ -1,0 +1,9 @@
+---
+- name: Nettoyage du répertoire temporaire VLC
+  ansible.windows.win_file:
+    path: "{{ vlc_temp_dir }}"
+    state: absent
+
+- name: Nettoyage fini
+  set_fact:
+    package_message: "{{ package_message }} (cleanup OK)"
