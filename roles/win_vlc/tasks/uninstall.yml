@@ -1,37 +1,53 @@
 ---
-- name: "Récupérer la liste des packages installés"
-  ansible.windows.win_package_facts:
-  register: win_pkgs
+- name: "Chercher VLC dans le registre (uninstall)"
+  ansible.windows.win_shell: |
+    $paths = @(
+      'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+      'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
 
-- name: "Chercher VLC dans les packages installés"
+    $app = Get-ItemProperty -Path $paths -ErrorAction SilentlyContinue |
+           Where-Object { $_.DisplayName -like 'VLC media player*' } |
+           Select-Object -First 1
+
+    if ($app) {
+      $app | Select-Object DisplayName, DisplayVersion, UninstallString, InstallLocation |
+        ConvertTo-Json -Compress
+    }
+  register: vlc_uninstall_raw
+  changed_when: false
+
+- name: "Interpréter les infos de désinstallation VLC"
   set_fact:
-    vlc_package: >-
-      {{ win_pkgs.packages
-         | selectattr('name', 'search', '^VLC media player')
-         | list
-         | first }}
-  when:
-    - win_pkgs.packages is defined
-    - win_pkgs.packages | length > 0
+    vlc_uninstall_info: >-
+      {{ (vlc_uninstall_raw.stdout | length > 0)
+          | ternary(vlc_uninstall_raw.stdout | from_json, {}) }}
+  when: vlc_uninstall_raw.stdout is defined
 
-- name: "VLC introuvable : rien à désinstaller"
+- name: "VLC non installé : rien à désinstaller"
   set_fact:
     package_status: "unchanged"
     package_message: "VLC non installé, aucune désinstallation nécessaire"
-  when: vlc_package is not defined
+  when: vlc_uninstall_info is not defined
+        or vlc_uninstall_info.UninstallString is not defined
 
-- name: "Désinstallation VLC via product_id"
-  ansible.windows.win_package:
-    product_id: "{{ vlc_package.product_id }}"
-    state: absent
-    log_path: "{{ vlc_log_file }}"
+- name: "Désinstallation VLC via UninstallString"
+  ansible.windows.win_shell: |
+    $cmd = "{{ vlc_uninstall_info.UninstallString }}"
+    if ($cmd -notmatch '/S') { $cmd = "$cmd /S" }
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/c $cmd" -Wait -PassThru
   register: uninstall_out
-  when: vlc_package is defined
+  when: vlc_uninstall_info is defined
+        and vlc_uninstall_info.UninstallString is not null
 
 - name: "Mettre à jour le statut après désinstallation"
   set_fact:
-    package_status: "removed"
-    package_message: "VLC désinstallé (product_id={{ vlc_package.product_id }})"
-    reboot_required: "{{ uninstall_out.reboot_required | default(false) }}"
-  when: vlc_package is defined
+    package_status: "{{ 'removed' if uninstall_out.rc == 0 else 'error' }}"
+    package_message: >-
+      {{ 'VLC désinstallé'
+         if uninstall_out.rc == 0
+         else 'Erreur désinstallation VLC (rc=' ~ uninstall_out.rc ~ ')' }}
+    reboot_required: false
+  when: vlc_uninstall_info is defined
+        and vlc_uninstall_info.UninstallString is not null
 
