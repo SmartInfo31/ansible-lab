@@ -4,17 +4,23 @@
     path: "{{ vlc_temp_dir }}"
     state: directory
 
-- name: "Décompresser le ZIP VLC pour upgrade"
-  ansible.windows.win_unzip:
-    src: "{{ role_path }}\\files\\{{ vlc_zip }}"
-    dest: "{{ vlc_temp_dir }}"
-    delete_archive: no
+- name: "Copier le ZIP VLC sur la cible (upgrade)"
+  ansible.windows.win_copy:
+    src: "{{ vlc_zip }}"
+    dest: "{{ vlc_temp_dir }}\\{{ vlc_zip }}"
+
+- name: "Dézipper le package VLC pour upgrade"
+  ansible.windows.win_shell: >
+    PowerShell -NoProfile -NonInteractive -Command
+    "Expand-Archive -LiteralPath '{{ vlc_temp_dir }}\\{{ vlc_zip }}' -DestinationPath '{{ vlc_temp_dir }}' -Force"
+  args:
+    creates: "{{ vlc_temp_dir }}\\{{ vlc_installer }}"
 
 - name: "Upgrade VLC vers {{ vlc_version }}"
   ansible.windows.win_package:
     path: "{{ vlc_temp_dir }}\\{{ vlc_installer }}"
     arguments: "/S"
-    state: present          # 'present' suffit, il installera/upgrade si besoin
+    state: present      # 'present' suffit, il fera install/upgrade
     log_path: "{{ vlc_log_file }}"
   register: upgrade_out
 
