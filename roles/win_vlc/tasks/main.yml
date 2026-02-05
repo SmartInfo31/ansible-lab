@@ -14,7 +14,7 @@
 # ====================
 #   MODE AUTO
 # ====================
-- name: Auto-mode : upgrade uniquement
+- name: "Auto-mode : upgrade uniquement"
   include_tasks: upgrade.yml
   when:
     - mode == "auto"
@@ -24,13 +24,13 @@
 # ====================
 #   MODE FORCE INSTALL
 # ====================
-- name: Force install : installation si absent
+- name: "Force install : installation si absent"
   include_tasks: install.yml
   when:
     - mode == "force_install"
     - not detect_result.installed
 
-- name: Force install : upgrade si version différente
+- name: "Force install : upgrade si version différente"
   include_tasks: upgrade.yml
   when:
     - mode == "force_install"
