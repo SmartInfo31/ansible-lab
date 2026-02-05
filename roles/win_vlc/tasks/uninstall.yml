@@ -1,12 +1,37 @@
 ---
-- name: Désinstallation VLC
+- name: "Récupérer la liste des packages installés"
+  ansible.windows.win_package_facts:
+  register: win_pkgs
+
+- name: "Chercher VLC dans les packages installés"
+  set_fact:
+    vlc_package: >-
+      {{ win_pkgs.packages
+         | selectattr('name', 'search', '^VLC media player')
+         | list
+         | first }}
+  when:
+    - win_pkgs.packages is defined
+    - win_pkgs.packages | length > 0
+
+- name: "VLC introuvable : rien à désinstaller"
+  set_fact:
+    package_status: "unchanged"
+    package_message: "VLC non installé, aucune désinstallation nécessaire"
+  when: vlc_package is not defined
+
+- name: "Désinstallation VLC via product_id"
   ansible.windows.win_package:
-    name: "VLC media player"
+    product_id: "{{ vlc_package.product_id }}"
     state: absent
     log_path: "{{ vlc_log_file }}"
   register: uninstall_out
+  when: vlc_package is defined
 
-- set_fact:
+- name: "Mettre à jour le statut après désinstallation"
+  set_fact:
     package_status: "removed"
-    package_message: "VLC désinstallé"
+    package_message: "VLC désinstallé (product_id={{ vlc_package.product_id }})"
     reboot_required: "{{ uninstall_out.reboot_required | default(false) }}"
+  when: vlc_package is defined
+
