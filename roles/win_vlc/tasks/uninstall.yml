@@ -33,16 +33,24 @@
 - name: "Désinstallation VLC via UninstallString"
   ansible.windows.win_shell: |
         $cmd = '{{ vlc_uninstall_info.UninstallString }}'
+        # 1) Dé-escape JSON-style si nécessaire
+$cmd = $cmd -replace '\\\\','\'   # \\ -> \
+$cmd = $cmd -replace '\\"','"'    # \" -> "
 
-        if ($cmd -notmatch '(^|\s)/S(\s|$)') { $cmd = "$cmd /S" }
+# 2) Ajoute /S si pas déjà présent
+if ($cmd -notmatch '(^|\s)/S(\s|$)') { $cmd = "$cmd /S" }
 
-        # Parse exe + args puis Start-Process
-        if ($cmd -match '^\s*"([^"]+)"\s*(.*)$') {
-           Start-Process -FilePath $matches[1] -ArgumentList $matches[2] -Wait
-        } else {
-           $parts = $cmd -split '\s+', 2
-           start-Process -FilePath $parts[0] -ArgumentList ($parts | Select-Object -Skip 1) -Wait
-        }
+# 3) Parse "exe" + args et exécute
+if ($cmd -match '^\s*"([^"]+)"\s*(.*)$') {
+  $exe  = $matches[1]
+  $args = $matches[2]
+} else {
+  $parts = $cmd -split '\s+', 2
+  $exe  = $parts[0]
+  $args = if ($parts.Count -gt 1) { $parts[1] } else { '' }
+}
+
+Start-Process -FilePath $exe -ArgumentList $args -Wait
   register: uninstall_out
   when: vlc_uninstall_info is defined
         and (vlc_uninstall_info.UninstallString is defined)
