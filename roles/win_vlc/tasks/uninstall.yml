@@ -1,26 +1,34 @@
 ---
-# Ici on suppose que detect.yml a déjà tourné
-# et posé detect_result.installed = true/false
+- name: "Chercher VLC dans le registre (uninstall)"
+  ansible.windows.win_shell: |
+    $paths = @(
+      'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+      'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+
+    $app = Get-ItemProperty -Path $paths -ErrorAction SilentlyContinue |
+           Where-Object { $_.DisplayName -like 'VLC media player*' } |
+           Select-Object -First 1
+
+    if ($app) {
+      $app | Select-Object DisplayName, DisplayVersion, UninstallString, InstallLocation |
+        ConvertTo-Json -Compress
+    }
+  register: vlc_uninstall_raw
+  changed_when: false
+
+- name: "Parser les infos VLC si trouvées"
+  set_fact:
+    vlc_uninstall_info: "{{ vlc_uninstall_raw.stdout | from_json }}"
+  when: vlc_uninstall_raw.stdout is defined and (vlc_uninstall_raw.stdout | length > 0)
 
 - name: "VLC non installé : rien à désinstaller"
   set_fact:
     package_status: "unchanged"
     package_message: "VLC non installé, aucune désinstallation nécessaire"
-  when: not (detect_result.installed | default(false))
-
-- name: "Vérifier la présence de l'uninstaller VLC"
-  ansible.windows.win_stat:
-    path: 'C:\Program Files\VideoLAN\VLC\uninstall.exe'
-  register: vlc_uninst
-  when: detect_result.installed | default(false)
-
-- name: "VLC installé mais pas d'uninstaller trouvé"
-  set_fact:
-    package_status: "error"
-    package_message: "VLC détecté mais C:\\Program Files\\VideoLAN\\VLC\\uninstall.exe introuvable"
-  when:
-    - detect_result.installed | default(false)
-    - not vlc_uninst.stat.exists
+  when: vlc_uninstall_info is not defined
+        or (vlc_uninstall_info.UninstallString is not defined)
+        or (vlc_uninstall_info.UninstallString | string | length == 0)
 
 - name: "Désinstallation VLC (uninstall.exe /S)"
   ansible.windows.win_shell: >
@@ -38,7 +46,4 @@
          if uninstall_out.rc == 0
          else 'Erreur désinstallation VLC (rc=' ~ uninstall_out.rc ~ ')' }}
     reboot_required: false
-  when:
-    - detect_result.installed | default(false)
-    - vlc_uninst.stat.exists
-
+  when: uninstall_out is defined
