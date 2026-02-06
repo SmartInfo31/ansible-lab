@@ -22,15 +22,6 @@
     vlc_uninstall_info: "{{ vlc_uninstall_raw.stdout | from_json }}"
   when: vlc_uninstall_raw.stdout is defined and (vlc_uninstall_raw.stdout | length > 0)
 
-- name: "Nettoyer UninstallString (enlever guillemets externes)"
-  set_fact:
-    vlc_uninstall_path: "{{ vlc_uninstall_info.UninstallString[1:-1] }}"
-  when: vlc_uninstall_info.UninstallString is defined
-
-- name: "Debug vlc_uninstall_info brut"
-  debug:
-    var: vlc_uninstall_info
-
 - name: "VLC non installé : rien à désinstaller"
   set_fact:
     package_status: "unchanged"
@@ -39,16 +30,25 @@
         or (vlc_uninstall_info.UninstallString is not defined)
         or (vlc_uninstall_info.UninstallString | string | length == 0)
 
+- name: "Nettoyer UninstallString (enlever guillemets externes)"
+  set_fact:
+    vlc_uninstall_path: "{{ vlc_uninstall_info.UninstallString[1:-1] }}"
+  when: vlc_uninstall_info.UninstallString is defined
+  
+- name: "Debug chemin nettoyé"
+  debug:
+    msg: "vlc_uninstall_path='{{ vlc_uninstall_path }}'"
+  when: vlc_uninstall_path is defined
+
 - name: "Désinstallation VLC via UninstallString"
   ansible.windows.win_shell: |
-    $cmd = {{ vlc_uninstall_info.UninstallString | to_json }}
-    Write-Output "CMD brut = $cmd"
+    $cmd = "{{ vlc_uninstall_path }}"
+    Write-Output "CMD = $cmd"
     Start-Process -FilePath $cmd -ArgumentList '/S' -Wait
-
+  args:
+    executable: powershell.exe
   register: uninstall_out
-  when: vlc_uninstall_info is defined
-        and (vlc_uninstall_info.UninstallString is defined)
-        and (vlc_uninstall_info.UninstallString | string | length > 0)
+  when: vlc_uninstall_path is defined
 
 - name: "Mettre à jour le statut après désinstallation"
   set_fact:
