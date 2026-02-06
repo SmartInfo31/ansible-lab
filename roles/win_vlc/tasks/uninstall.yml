@@ -35,7 +35,7 @@
         $cmd = '{{ vlc_uninstall_info.UninstallString }}'
         # 1) Dé-escape JSON-style si nécessaire
         $cmd = $cmd -replace '\\\\','\'   # \\ -> \
-        $cmd = $cmd -replace '\\"','"'    # \" -> "
+        #$cmd = $cmd -replace '\\"','"'    # \" -> "
 
         # 2) Ajoute /S si pas déjà présent
         if ($cmd -notmatch '(^|\s)/S(\s|$)') { $cmd = "$cmd /S" }
