@@ -22,6 +22,11 @@
     vlc_uninstall_info: "{{ vlc_uninstall_raw.stdout | from_json }}"
   when: vlc_uninstall_raw.stdout is defined and (vlc_uninstall_raw.stdout | length > 0)
 
+- name: "Nettoyer UninstallString (enlever guillemets externes)"
+  set_fact:
+    vlc_uninstall_path: "{{ vlc_uninstall_info.UninstallString[1:-1] }}"
+  when: vlc_uninstall_info.UninstallString is defined
+
 - name: "Debug vlc_uninstall_info brut"
   debug:
     var: vlc_uninstall_info
