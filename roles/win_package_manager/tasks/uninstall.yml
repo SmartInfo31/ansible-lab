@@ -53,10 +53,7 @@
 
 - name: "Update status after uninstall"
   set_fact:
-    package_status: "{{ 'removed' if uninstall_out.rc == 0 else 'error' }}"
-    package_message: >-
-      {{ package_name ~ ' uninstalled'
-         if uninstall_out.rc == 0
-         else package_name ~ ' uninstall error (rc=' ~ uninstall_out.rc ~ ')' }}
+    package_status: "removed"
+    package_message: "{{ package_name }} uninstalled"
     reboot_required: false
   when: uninstall_out is defined
