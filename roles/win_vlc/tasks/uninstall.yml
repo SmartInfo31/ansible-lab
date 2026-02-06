@@ -22,6 +22,10 @@
     vlc_uninstall_info: "{{ vlc_uninstall_raw.stdout | from_json }}"
   when: vlc_uninstall_raw.stdout is defined and (vlc_uninstall_raw.stdout | length > 0)
 
+- name: "Debug vlc_uninstall_info brut"
+  debug:
+    var: vlc_uninstall_info
+
 - name: "VLC non installé : rien à désinstaller"
   set_fact:
     package_status: "unchanged"
