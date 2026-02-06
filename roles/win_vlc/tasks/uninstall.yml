@@ -36,8 +36,9 @@
 
 - name: "Désinstallation VLC via UninstallString"
   ansible.windows.win_shell: |
-    $cmd = ($json | ConvertFrom-Json).vlc_uninstall_info.UninstallString
-    Start-Process -FilePath ($cmd) -ArgumentList '/S' -Wait
+    $cmd = {{ vlc_uninstall_info.UninstallString | to_json }}
+    Write-Output "CMD brut = $cmd"
+    Start-Process -FilePath $cmd -ArgumentList '/S' -Wait
 
   register: uninstall_out
   when: vlc_uninstall_info is defined
