@@ -38,6 +38,7 @@
     if ($cmd -notmatch ' /S( |$)') {
       $cmd = "$cmd /S"
     }
+    Write-Output "UNINSTALL_CMD: Start-Process -FilePath cmd.exe -ArgumentList /c $cmd"
 
     Start-Process -FilePath "cmd.exe" -ArgumentList "/c $cmd" -Wait -PassThru
   register: uninstall_out
