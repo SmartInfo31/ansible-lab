@@ -1,0 +1,79 @@
+---
+# Generic Windows Package Manager
+# Input variables expected:
+#   - mode: auto | force_install | force_uninstall
+#   - reboot: yes | no
+#   - Package vars loaded from vars/<package>.yml
+
+- name: Verify mode parameter
+  fail:
+    msg: "Parameter 'mode' is required: auto, force_install or force_uninstall"
+  when: mode is not defined
+
+- name: Verify package configuration loaded
+  fail:
+    msg: "Package configuration missing. Load vars file first."
+  when: package_name is not defined or package_version is not defined
+
+- include_tasks: detect.yml
+  register: detect_result
+
+# ====================
+#   MODE AUTO
+# ====================
+- name: "Auto-mode: upgrade if installed and outdated"
+  include_tasks: upgrade.yml
+  when:
+    - mode == "auto"
+    - detect_result.installed
+    - detect_result.version != package_version
+
+# ====================
+#   MODE FORCE INSTALL
+# ====================
+- name: "Force install: install if absent"
+  include_tasks: install.yml
+  when:
+    - mode == "force_install"
+    - not detect_result.installed
+
+- name: "Force install: upgrade if version mismatch"
+  include_tasks: upgrade.yml
+  when:
+    - mode == "force_install"
+    - detect_result.installed
+    - detect_result.version != package_version
+
+# ====================
+#   MODE FORCE UNINSTALL
+# ====================
+- name: Force uninstall
+  include_tasks: uninstall.yml
+  when: mode == "force_uninstall"
+
+# ====================
+#   CLEANUP
+# ====================
+- include_tasks: cleanup.yml
+
+# ====================
+#   REBOOT HANDLING
+# ====================
+- name: "Reboot if requested and required"
+  ansible.windows.win_reboot:
+    msg: "Reboot triggered by win_package_manager ({{ package_name }})"
+  when:
+    - reboot | default("no") | bool
+    - reboot_required | default(false) | bool
+
+# ====================
+#   OUTPUT FINAL
+# ====================
+- name: "Final package status"
+  debug:
+    msg:
+      package: "{{ package_name }}"
+      host: "{{ inventory_hostname }}"
+      status: "{{ package_status | default('unknown') }}"
+      message: "{{ package_message | default('') }}"
+      reboot_required: "{{ reboot_required | default(false) }}"

@@ -1,6 +1,10 @@
-- hosts: windows
+---
+- name: Force uninstall VLC
+  hosts: windows
   gather_facts: false
+  vars_files:
+    - ../roles/win_package_manager/vars/vlc.yml
   roles:
-    - role: win_vlc
+    - role: win_package_manager
       mode: force_uninstall
       reboot: no

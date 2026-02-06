@@ -1,0 +1,32 @@
+---
+# Silent installation of package
+
+- name: "Prepare temporary directory"
+  ansible.windows.win_file:
+    path: "{{ package_temp_dir }}"
+    state: directory
+
+- name: "Copy {{ package_name }} ZIP to target"
+  ansible.windows.win_copy:
+    src: "{{ package_zip }}"
+    dest: "{{ package_temp_dir }}\\{{ package_zip }}"
+
+- name: "Extract {{ package_name }} package"
+  ansible.windows.win_shell: >
+    PowerShell -NoProfile -NonInteractive -Command
+    "Expand-Archive -LiteralPath '{{ package_temp_dir }}\\{{ package_zip }}' -DestinationPath '{{ package_temp_dir }}' -Force"
+  args:
+    creates: "{{ package_temp_dir }}\\{{ package_installer }}"
+
+- name: "Install {{ package_name }} {{ package_version }}"
+  ansible.windows.win_package:
+    path: "{{ package_temp_dir }}\\{{ package_installer }}"
+    arguments: "/S"
+    state: present
+    log_path: "{{ package_log_file }}"
+  register: install_out
+
+- set_fact:
+    package_status: "installed"
+    package_message: "{{ package_name }} {{ package_version }} installed"
+    reboot_required: "{{ install_out.reboot_required | default(false) }}"

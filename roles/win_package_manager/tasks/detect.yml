@@ -1,0 +1,21 @@
+---
+# Detect package installation via registry
+
+- name: "Read registry key for {{ package_name }}"
+  ansible.windows.win_reg_stat:
+    path: "{{ package_reg_key }}"
+    name: "{{ package_reg_value }}"
+  register: reg_pkg
+
+- set_fact:
+    installed: "{{ reg_pkg.exists }}"
+    version: "{{ reg_pkg.value if reg_pkg.exists else 'absent' }}"
+
+- set_fact:
+    detect_result:
+      installed: "{{ installed }}"
+      version: "{{ version }}"
+
+- name: "Detection result for {{ package_name }}"
+  debug:
+    msg: "Installed: {{ installed }}, Version: {{ version }}"

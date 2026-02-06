@@ -1,0 +1,11 @@
+---
+# Cleanup temporary directory
+
+- name: "Cleanup temporary directory for {{ package_name }}"
+  ansible.windows.win_file:
+    path: "{{ package_temp_dir }}"
+    state: absent
+
+- name: "Cleanup complete"
+  set_fact:
+    package_message: "{{ package_message }} (cleanup OK)"

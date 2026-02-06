@@ -1,6 +1,10 @@
-- hosts: windows
+---
+- name: Auto-update VLC if installed
+  hosts: windows
   gather_facts: false
+  vars_files:
+    - ../roles/win_package_manager/vars/vlc.yml
   roles:
-    - role: win_vlc
+    - role: win_package_manager
       mode: auto
       reboot: no

@@ -1,0 +1,17 @@
+---
+# VLC Media Player package configuration
+package_name: "VLC"
+package_version: "3.0.23"
+package_zip: "vlc-3.0.23-win64.zip"
+package_installer: "vlc-3.0.23-win64.exe"
+
+# Registry detection
+package_reg_key: "HKLM:\\Software\\VideoLAN\\VLC"
+package_reg_value: "Version"
+
+# Temporary paths
+package_temp_dir: "C:\\Temp\\vlc"
+package_log_file: "C:\\Temp\\install_vlc.log"
+
+# Uninstall detection (display name pattern for registry search)
+package_display_name_pattern: "VLC media player*"
