@@ -1,0 +1,10 @@
+---
+- name: "Force uninstall notepad++"
+  hosts: windows
+  gather_facts: false
+  vars_files:
+    - ../roles/win_package_manager/vars/notepadplusplus.yml
+  roles:
+    - role: win_package_manager
+      mode: force_uninstall
+      reboot: no

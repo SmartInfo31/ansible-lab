@@ -1,0 +1,17 @@
+---
+# Notepad++ package configuration
+package_name: "Notepad++"
+package_version: "8.9.1"
+package_zip: "npp.8.9.1.Installer.x64.zip"
+package_installer: "npp.8.9.1.Installer.x64.exe"
+
+# Registry detection
+package_reg_key: "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Notepad++"
+package_reg_value: "DisplayVersion"
+
+# Temporary paths
+package_temp_dir: "C:\\Temp\\notepadpp"
+package_log_file: "C:\\Temp\\install_npp.log"
+
+# Uninstall detection (display name pattern for registry search)
+package_display_name_pattern: "notepad++*"
