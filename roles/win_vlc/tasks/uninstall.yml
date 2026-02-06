@@ -30,13 +30,13 @@
         or (vlc_uninstall_info.UninstallString is not defined)
         or (vlc_uninstall_info.UninstallString | string | length == 0)
 
-- name: "Désinstallation VLC (uninstall.exe /S)"
-  ansible.windows.win_shell: >
-    & "C:\Program Files\VideoLAN\VLC\uninstall.exe" /S
+- name: "Désinstallation VLC via UninstallString"
+  ansible.windows.win_shell: '{{ vlc_uninstall_info.UninstallString }}' /S
+
   register: uninstall_out
-  when:
-    - detect_result.installed | default(false)
-    - vlc_uninst.stat.exists
+  when: vlc_uninstall_info is defined
+        and (vlc_uninstall_info.UninstallString is defined)
+        and (vlc_uninstall_info.UninstallString | string | length > 0)
 
 - name: "Mettre à jour le statut après désinstallation"
   set_fact:
