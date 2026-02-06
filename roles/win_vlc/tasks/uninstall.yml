@@ -31,8 +31,15 @@
         or (vlc_uninstall_info.UninstallString | string | length == 0)
 
 - name: "Désinstallation VLC via UninstallString"
-  ansible.windows.win_shell: '{{ vlc_uninstall_info.UninstallString }} /S'
+  ansible.windows.win_shell: |
+    $cmd = '{{ vlc_uninstall_info.UninstallString }}'
 
+    # Ajoute /S si pas déjà présent (pour mode silencieux)
+    if ($cmd -notmatch ' /S( |$)') {
+      $cmd = "$cmd /S"
+    }
+
+    & $cmd
   register: uninstall_out
   when: vlc_uninstall_info is defined
         and (vlc_uninstall_info.UninstallString is defined)
